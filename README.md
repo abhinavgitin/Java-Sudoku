@@ -1,29 +1,33 @@
-# README #
+<h1 align="center">Java Sudoku</h1>
 
-This README would normally document whatever steps are necessary to get your application up and running.
+<p align="center">A Sudoku game built with Java and JavaFX, following a tutorial by Ryan @BracketCove.</p>
 
-### What is this repository for? ###
+## Why I Built This
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+I was watching YouTube when I came across a video of someone typing Java code some were of Rust and C++. It made me want to code something I hadn't touched before.
 
-### How do I get set up? ###
+I thought of Why not something like Java GUI or JavaFX
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+I kept scrolling and found [this video](https://youtu.be/qH9mWpYMtYU?si=mlUETPsIZyqNoc85), where [Ryan](https://github.com/BracketCove) teaches how to build a Sudoku game in Java.
 
-### Contribution guidelines ###
+Why not, right? I coded along with him and learned a lot! Even if i did not know how to initialize a pop.xml file
 
-* Writing tests
-* Code review
-* Other guidelines
+## What I Learned
 
-### Who do I talk to? ###
+* How to set up a project with Maven and JavaFX lib/
+* How to work with JavaFX windows
+* How to use JavaFX pieces like colors, rectangles and text boxes
+* How to use the JavaFX buildIn classes
+* How to addAll() and arrange UI components
+* How to think before I code, then implement
+* How to use a HashMap in a real project
 
-* Repo owner or admin
-* Other community or team contact
+## Tech Stack
+
+* Java
+* JavaFX
+* Maven
+
+## Credits
+
+Built by [Abhinav Puri](https://github.com/your-username), following the tutorial by [Ryan (BracketCove)](https://github.com/BracketCove).
