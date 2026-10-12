@@ -4,12 +4,15 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.scene.control.TextField;
 import sudoku.constants.GameState;
 import sudoku.problemdomain.Coordinates;
 import sudoku.problemdomain.SudokuGame;
@@ -156,19 +159,18 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
         stage.setScene(scene);
 
     }
-
-    private void updateSquare(int x, int y, int input) {
+    @Override
+    public void updateSquare(int x, int y, int input) {
         SudokuTextField tile = textFieldCoordinates.get(new Coordinates(x, y));
 
         String value = Integer.toString(input);
+        if ( value.equals("0")) value = "";
+
+        text.textProperty().setValue(value);
     }
+
     @Override
     public void setListner(IUserInterfaceContract.EventListner listener) {
-
-    }
-
-    @Override
-    public void updateSquare(int x, int y, int input) {
 
     }
 
@@ -197,7 +199,8 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
 
     @Override
     public void showDialog(String message) {
-
+        Alert dialog = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        dialog.showAndWait();
     }
 
     @Override
@@ -207,6 +210,24 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
 
     @Override
     public void handle(KeyEvent event) {
+        if ( event.getEventType() == KeyEvent.KEY_PRESSED) {
+            if (event.getText().matches("[0-9]")) {
+                int value = Integer.parseInt(event.getText());
+                handleInput(value, event.getSource());
+            } else if ( event.getCode() == KeyCode.BACK_SPACE) {
+                handelInput(0,event.getSource());
+            } else {
+                ((TextField)event.getSource()).setText("");
+            }
+        }
+    }
 
+    private void handleInput(int value, Object source) {
+        listener.onSudokuInput(
+                ((SudokuTextField) source).getX(),
+                ((SudokuTextField) source).getY(),
+                value
+
+        );
     }
 }
