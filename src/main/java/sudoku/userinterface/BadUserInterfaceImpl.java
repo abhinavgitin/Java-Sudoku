@@ -42,7 +42,7 @@ public class BadUserInterfaceImpl implements IUserInterfaceContract.View, EventH
         Font tf = new Font(43);
         t.setFont(tf);
         root.getChildren().add(t);
-        Color c = Color.rgb(0, 150, 136);
+        Color c = Color.rgb(34, 174, 137);
         scene.setFill(c);
         stage.setScene(scene);
 

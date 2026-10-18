@@ -9,6 +9,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
@@ -34,7 +35,7 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
     private static final double BOARD_PADDING = 50;
     private static final double BOARD_X_AND_Y = 576;
 
-    private static final Color WINDOW_BACKGROUND_COLOR = Color.rgb(0,150,136);
+    private static final Color WINDOW_BACKGROUND_COLOR = Color.rgb(38,174,137);
     private static final Color BOARD_BACKGROUND_COLOR = Color.rgb(223,242,241);
     private static final String SUDOKU = "Sudoku";
 
@@ -159,10 +160,22 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
     }
 
     private void drawBackground(Group root) {
-        Scene scene = new Scene(root, WINDOW_X, WINDOW_Y);
+        StackPane container = new StackPane(root);
+        container.setStyle("-fx-background-color: rgb(38,174,137);");
+        Scene scene = new Scene(container, WINDOW_X, WINDOW_Y);
         scene.setFill(WINDOW_BACKGROUND_COLOR);
-        stage.setScene(scene);
 
+        scene.widthProperty().addListener((obs, oldVal, newVal) -> updateScale(root, scene));
+        scene.heightProperty().addListener((obs, oldVal, newVal) -> updateScale(root, scene));
+
+        stage.setScene(scene);
+    }
+
+    private void updateScale(Group root, Scene scene) {
+        if (scene.getWidth() <= 0 || scene.getHeight() <= 0) return;
+        double scale = Math.min(scene.getWidth() / WINDOW_X, scene.getHeight() / WINDOW_Y);
+        root.setScaleX(scale);
+        root.setScaleY(scale);
     }
     @Override
     public void updateSquare(int x, int y, int input) {
@@ -204,8 +217,9 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
 
     @Override
     public void showDialog(String message) {
-        Alert dialog = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        Alert dialog = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
         dialog.showAndWait();
+        listener.onDilogClick();
     }
 
     @Override
