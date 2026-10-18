@@ -14,7 +14,8 @@ body {
     align-items: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     user-select: none;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 #app-container {
@@ -25,6 +26,7 @@ body {
     width: 100%;
     max-width: 668px;
     padding: 16px;
+    margin: auto;
 }
 
 #board-wrapper {
@@ -63,7 +65,11 @@ body {
     font-weight: 500;
     color: #000;
     text-align: center;
-    caret-color: transparent;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.1s ease;
 }
 
 .sudoku-cell:nth-child(9n) {
@@ -93,17 +99,88 @@ body {
     cursor: pointer;
 }
 
-.sudoku-cell.editable:focus {
+.sudoku-cell.editable.selected {
+    background-color: rgb(105, 190, 183);
+}
+
+#digit-bar {
+    width: 100%;
+    max-width: 576px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    background-color: rgb(223, 242, 241);
+    border: 2px solid #000;
+    margin-top: 14px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.digit-btn {
+    height: clamp(38px, 8vw, 50px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: inherit;
+    font-size: clamp(18px, 4.2vw, 26px);
+    font-weight: 500;
+    color: #000;
+    background-color: rgb(223, 242, 241);
+    border: none;
+    border-right: 2px solid #000;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.1s ease;
+}
+
+.digit-btn:last-child {
+    border-right: none;
+}
+
+.digit-btn:hover,
+.digit-btn:active {
     background-color: rgb(200, 230, 228);
+}
+
+.digit-btn.clear-btn {
+    background-color: rgb(223, 242, 241);
 }
 
 #game-title {
     color: #ffffff;
-    font-size: clamp(30px, 6vw, 43px);
+    font-size: clamp(28px, 5.5vw, 40px);
     font-weight: 600;
-    margin-top: 18px;
+    margin-top: 14px;
     letter-spacing: 0.5px;
     text-align: center;
+}
+
+#new-game-btn {
+    margin-top: 8px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: rgb(0, 77, 64);
+    background-color: rgb(223, 242, 241);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    touch-action: manipulation;
+}
+
+#new-game-btn:hover {
+    background-color: #ffffff;
+}
+
+#new-game-btn:active {
+    transform: scale(0.96);
+    background-color: rgb(200, 230, 228);
 }
 
 #dialog-overlay {

@@ -307,6 +307,15 @@ class LocalStorageImpl {
             return null;
         }
     }
+
+    static clearGameData() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(this.INITIAL_KEY);
+        } catch (e) {
+            console.error(e);
+        }
+    }
 }
 
 class ControlLogic {
@@ -340,6 +349,10 @@ class ControlLogic {
     }
 
     onDialogClick() {
+        this.onNewGameClick();
+    }
+
+    onNewGameClick() {
         try {
             const newGame = GameLogic.getNewGame();
             const initialClues = SudokuUtilities.copyToNewArray(newGame.gridState);
@@ -355,12 +368,15 @@ class ControlLogic {
 class UserInterfaceImpl {
     constructor() {
         this.boardElement = document.getElementById("sudoku-board");
+        this.digitBarElement = document.getElementById("digit-bar");
         this.dialogOverlay = document.getElementById("dialog-overlay");
         this.dialogBox = document.getElementById("dialog-box");
         this.dialogTitle = document.getElementById("dialog-title");
         this.dialogMessage = document.getElementById("dialog-message");
         this.dialogOkBtn = document.getElementById("dialog-ok-btn");
+        this.newGameBtn = document.getElementById("new-game-btn");
         this.tiles = new Map();
+        this.selectedCoord = null;
         this.listener = null;
         this.onDialogCloseCallback = null;
 
@@ -373,43 +389,178 @@ class UserInterfaceImpl {
             }
         });
 
+        if (this.newGameBtn) {
+            this.newGameBtn.addEventListener("click", () => {
+                if (this.listener && typeof this.listener.onNewGameClick === "function") {
+                    this.listener.onNewGameClick();
+                }
+            });
+        }
+
         this.initializeUserInterface();
+        this.initializeDigitBar();
+        this.initializeKeyboardNavigation();
     }
 
     setListener(listener) {
         this.listener = listener;
     }
 
+    initializeDigitBar() {
+        if (!this.digitBarElement) return;
+        this.digitBarElement.innerHTML = "";
+
+        // Digits 1 to 9
+        for (let num = 1; num <= 9; num++) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "digit-btn";
+            btn.textContent = String(num);
+            btn.setAttribute("aria-label", `Digit ${num}`);
+
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                this.handleDigitInput(num);
+            });
+
+            this.digitBarElement.appendChild(btn);
+        }
+
+        // 10th slot: empty / clear box (matching WebSudoku style)
+        const clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.className = "digit-btn clear-btn";
+        clearBtn.textContent = "";
+        clearBtn.setAttribute("aria-label", "Clear selected cell");
+        clearBtn.setAttribute("title", "Clear");
+
+        clearBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.handleDigitInput(0);
+        });
+
+        this.digitBarElement.appendChild(clearBtn);
+    }
+
+    handleDigitInput(num) {
+        if (!this.selectedCoord) return;
+        const { x, y } = this.selectedCoord;
+        const cell = this.tiles.get(`${x},${y}`);
+        if (!cell || cell.classList.contains("clue")) return;
+
+        if (this.listener) {
+            this.listener.onSudokuInput(x, y, num);
+        }
+    }
+
+    selectCell(x, y) {
+        if (x < 0 || x >= GRID_BOUNDARY || y < 0 || y >= GRID_BOUNDARY) return;
+        const cell = this.tiles.get(`${x},${y}`);
+        if (!cell || cell.classList.contains("clue")) return;
+
+        if (this.selectedCoord) {
+            const prevCell = this.tiles.get(`${this.selectedCoord.x},${this.selectedCoord.y}`);
+            if (prevCell) {
+                prevCell.classList.remove("selected");
+            }
+        }
+
+        this.selectedCoord = { x, y };
+        cell.classList.add("selected");
+    }
+
+    clearSelection() {
+        if (this.selectedCoord) {
+            const prevCell = this.tiles.get(`${this.selectedCoord.x},${this.selectedCoord.y}`);
+            if (prevCell) {
+                prevCell.classList.remove("selected");
+            }
+            this.selectedCoord = null;
+        }
+    }
+
     initializeUserInterface() {
         this.boardElement.innerHTML = "";
+        this.selectedCoord = null;
+
         for (let yIndex = 0; yIndex < GRID_BOUNDARY; yIndex++) {
             for (let xIndex = 0; xIndex < GRID_BOUNDARY; xIndex++) {
                 const cell = document.createElement("div");
                 cell.className = "sudoku-cell";
-                cell.setAttribute("tabindex", "0");
-                cell.setAttribute("role", "textbox");
+                cell.setAttribute("role", "button");
+                cell.setAttribute("aria-label", `Row ${yIndex + 1}, Column ${xIndex + 1}`);
 
                 const key = `${xIndex},${yIndex}`;
                 this.tiles.set(key, cell);
 
-                cell.addEventListener("keydown", (event) => {
-                    if (!cell.classList.contains("editable")) return;
-                    if (event.key >= "0" && event.key <= "9") {
-                        event.preventDefault();
-                        const val = parseInt(event.key, 10);
-                        if (this.listener) {
-                            this.listener.onSudokuInput(xIndex, yIndex, val);
-                        }
-                    } else if (event.key === "Backspace" || event.key === "Delete") {
-                        event.preventDefault();
-                        if (this.listener) {
-                            this.listener.onSudokuInput(xIndex, yIndex, 0);
-                        }
-                    }
+                cell.addEventListener("click", () => {
+                    if (cell.classList.contains("clue")) return;
+                    this.selectCell(xIndex, yIndex);
                 });
 
                 this.boardElement.appendChild(cell);
             }
+        }
+    }
+
+    initializeKeyboardNavigation() {
+        window.addEventListener("keydown", (event) => {
+            if (!this.dialogOverlay.classList.contains("hidden")) return;
+
+            if (!this.selectedCoord) {
+                if (event.key.startsWith("Arrow")) {
+                    this.selectFirstEditable();
+                }
+                return;
+            }
+
+            const { x, y } = this.selectedCoord;
+
+            if (event.key >= "1" && event.key <= "9") {
+                event.preventDefault();
+                this.handleDigitInput(parseInt(event.key, 10));
+            } else if (event.key === "0" || event.key === "Backspace" || event.key === "Delete") {
+                event.preventDefault();
+                this.handleDigitInput(0);
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                this.navigateEditable(x, y, 0, -1);
+            } else if (event.key === "ArrowDown") {
+                event.preventDefault();
+                this.navigateEditable(x, y, 0, 1);
+            } else if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                this.navigateEditable(x, y, -1, 0);
+            } else if (event.key === "ArrowRight") {
+                event.preventDefault();
+                this.navigateEditable(x, y, 1, 0);
+            }
+        });
+    }
+
+    selectFirstEditable() {
+        for (let y = 0; y < GRID_BOUNDARY; y++) {
+            for (let x = 0; x < GRID_BOUNDARY; x++) {
+                const cell = this.tiles.get(`${x},${y}`);
+                if (cell && cell.classList.contains("editable")) {
+                    this.selectCell(x, y);
+                    return;
+                }
+            }
+        }
+    }
+
+    navigateEditable(startX, startY, dx, dy) {
+        let curX = startX + dx;
+        let curY = startY + dy;
+        while (curX >= 0 && curX < GRID_BOUNDARY && curY >= 0 && curY < GRID_BOUNDARY) {
+            const cell = this.tiles.get(`${curX},${curY}`);
+            if (cell && cell.classList.contains("editable")) {
+                this.selectCell(curX, curY);
+                return;
+            }
+            curX += dx;
+            curY += dy;
         }
     }
 
@@ -421,9 +572,11 @@ class UserInterfaceImpl {
     }
 
     updateBoard(game, initialClues) {
+        this.clearSelection();
         for (let xIndex = 0; xIndex < GRID_BOUNDARY; xIndex++) {
             for (let yIndex = 0; yIndex < GRID_BOUNDARY; yIndex++) {
                 const cell = this.tiles.get(`${xIndex},${yIndex}`);
+                if (!cell) continue;
                 const value = game.gridState[xIndex][yIndex];
                 const textVal = value === 0 ? "" : String(value);
                 cell.textContent = textVal;
@@ -431,10 +584,8 @@ class UserInterfaceImpl {
                 const isClue = initialClues[xIndex][yIndex] !== 0;
                 if (isClue) {
                     cell.className = "sudoku-cell clue";
-                    cell.removeAttribute("tabindex");
                 } else {
                     cell.className = "sudoku-cell editable";
-                    cell.setAttribute("tabindex", "0");
                 }
             }
         }
@@ -465,6 +616,11 @@ class UserInterfaceImpl {
 
 class SudokuBuildLogic {
     static build(userInterface) {
+        if (sessionStorage.getItem("Java-Sudoku-ForceNewGame") === "true") {
+            sessionStorage.removeItem("Java-Sudoku-ForceNewGame");
+            LocalStorageImpl.clearGameData();
+        }
+
         let initialState = LocalStorageImpl.getGameData();
         let initialClues = LocalStorageImpl.getInitialClues();
 
@@ -478,10 +634,24 @@ class SudokuBuildLogic {
         const uiLogic = new ControlLogic(userInterface);
         userInterface.setListener(uiLogic);
         userInterface.updateBoard(initialState, initialClues);
+        return uiLogic;
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     const view = new UserInterfaceImpl();
-    SudokuBuildLogic.build(view);
+    const uiLogic = SudokuBuildLogic.build(view);
+
+    // Ctrl + Shift + R (or Cmd + Shift + R on Mac) -> Regenerate new game
+    // Normal Ctrl + R (or F5) -> Normal reload (keeps existing game in localStorage)
+    window.addEventListener("keydown", (event) => {
+        const isR = event.key === "r" || event.key === "R" || event.code === "KeyR";
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && isR) {
+            LocalStorageImpl.clearGameData();
+            sessionStorage.setItem("Java-Sudoku-ForceNewGame", "true");
+            if (uiLogic) {
+                uiLogic.onNewGameClick();
+            }
+        }
+    }, true);
 });
