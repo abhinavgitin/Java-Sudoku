@@ -2,8 +2,9 @@ package sudoku.computationallogic;
 
 import sudoku.problemdomain.Coordinates;
 
-import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import static sudoku.problemdomain.SudokuGame.GRID_BOUNDARY;
@@ -20,7 +21,7 @@ public class GameGenerator {
         boolean solvable = false;
         int[][] solvableArray = new int[GRID_BOUNDARY][GRID_BOUNDARY];
 
-        while( solvable == false ) {
+        while(!solvable) {
             SudokuUtilities.copySudokuArrayValues(solvedGame,solvableArray);
 
             int index = 0;
@@ -30,23 +31,23 @@ public class GameGenerator {
 
                 if ( solvableArray[xCoordinate][yCoordinate] != 0) {
                     solvableArray[xCoordinate][yCoordinate] = 0;
+                    index++;
                 }
             }
             int [][] tobeSolved = new int[GRID_BOUNDARY][GRID_BOUNDARY];
             SudokuUtilities.copySudokuArrayValues(solvableArray,tobeSolved);
 
             solvable = SudokuSolver.puzzleIsSolvable(tobeSolved);
-            // here at 5341637
 
         }
-        return new int[0][];
+        return solvableArray;
     }
 
     private static int[][] getSolvedGame() {
         Random random = new Random(System.currentTimeMillis());
         int[][] newGrid = new int[GRID_BOUNDARY][GRID_BOUNDARY];
 
-        for ( int value = 1; value = GRID_BOUNDARY; value++ ) {
+        for ( int value = 1; value <= GRID_BOUNDARY; value++ ) {
             int allocations = 0;
             int interrupt = 0;
 
@@ -55,9 +56,7 @@ public class GameGenerator {
             int attempts = 0;
             while(allocations < GRID_BOUNDARY) {
                 if (interrupt > 200) {
-                    allocTracker.forEach(coord -> {
-                        newGrid[coord.getX()][coord.getY()] = 0;
-                    });
+                    allocTracker.forEach(cord -> newGrid[cord.getX()][cord.getY()] = 0);
                     interrupt = 0;
                     allocations = 0;
                     allocTracker.clear();
@@ -75,7 +74,11 @@ public class GameGenerator {
                 if ( newGrid[xCoordinate][yCoordinate] == 0 ) {
                     newGrid[xCoordinate][yCoordinate] = value;
 
-                    if (GameLogic.sudokuIsInvalid(new Coordinates(xCoordinate,yCoordinate))) {
+                    if (GameLogic.sudokuIsInvalid(newGrid)) {
+                        newGrid[xCoordinate][yCoordinate] = 0;
+                        interrupt++;
+                    } else {
+                        allocTracker.add(new Coordinates(xCoordinate, yCoordinate));
                         allocations++;
                     }
                 }

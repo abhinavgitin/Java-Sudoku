@@ -5,19 +5,17 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
+import javafx.scene.text.*;
 import javafx.stage.Stage;
 import javafx.scene.control.TextField;
 import sudoku.constants.GameState;
 import sudoku.problemdomain.Coordinates;
 import sudoku.problemdomain.SudokuGame;
-
-import java.awt.*;
 import java.util.HashMap;
 import javafx.scene.paint.Color;
 
@@ -27,9 +25,9 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
     private final Stage stage;
     private final Group root;
 
-    private HashMap <Coordinates, SudokuTextField> textFieldCoordinates;
+    private final HashMap <Coordinates, SudokuTextField> textFieldCoordinates;
 
-    private IUserInterfaceContract.EventListner listener;
+    private IUserInterfaceContract.EventListener listener;
 
     private static final double WINDOW_X = 668;
     private static final double WINDOW_Y = 732;
@@ -41,9 +39,9 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
     private static final String SUDOKU = "Sudoku";
 
 
-    public UserInterfaceImpl(Stage stage, Group root) {
+    public UserInterfaceImpl(Stage stage, Group group) {
         this.stage = stage;
-        this.root = new Group();
+        this.root = group;
         this.textFieldCoordinates = new HashMap<>();
         initializeUserInterface();
     }
@@ -51,6 +49,7 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
     private void initializeUserInterface() {
 
         drawBackground(root);
+        drawSudokuBoard(root);
         drawTitle(root);
         drawTextField(root);
         drawGridLines(root);
@@ -59,7 +58,7 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
 
 
     private void drawGridLines(Group root) {
-        int xAndY = 144;
+        int xAndY = 114;
         int index = 0;
         while (index < 8) {
             int thickness;
@@ -69,16 +68,10 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
                 thickness = 2;
             }
             Rectangle verticalLine = getLine(
-                    xAndY + 64 * index,
-                    BOARD_PADDING,
-                    BOARD_X_AND_Y,
-                    thickness
+                    xAndY + 64 * index, thickness
             );
-            Rectangle horizontalLine = getLine(
-                    xAndY  + 64 * index,
-                    BOARD_PADDING,
-                    BOARD_X_AND_Y,
-                    thickness
+            Rectangle horizontalLine = getHorizontalLine(
+                    xAndY + 64 * index, thickness
             );
             root.getChildren().addAll(
                     verticalLine,
@@ -88,13 +81,25 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
         }
     }
 
-    private Rectangle getLine(int i, double boardPadding, double boardXAndY, int thickness) {
+    private Rectangle getLine(double x, double width) {
 
         Rectangle line = new Rectangle();
         line.setX(x);
-        line.setY(y);
-        line.setHeight(height);
+        line.setY(UserInterfaceImpl.BOARD_PADDING);
+        line.setHeight(UserInterfaceImpl.BOARD_X_AND_Y);
         line.setWidth(width);
+
+        line.setFill(Color.BLACK);
+        return line;
+    }
+
+    private Rectangle getHorizontalLine(double y, double height) {
+
+        Rectangle line = new Rectangle();
+        line.setX(UserInterfaceImpl.BOARD_PADDING);
+        line.setY(y);
+        line.setWidth(UserInterfaceImpl.BOARD_X_AND_Y);
+        line.setHeight(height);
 
         line.setFill(Color.BLACK);
         return line;
@@ -166,28 +171,28 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
         String value = Integer.toString(input);
         if ( value.equals("0")) value = "";
 
-        text.textProperty().setValue(value);
+        tile.textProperty().setValue(value);
     }
 
     @Override
-    public void setListner(IUserInterfaceContract.EventListner listener) {
-
+    public void setListener(IUserInterfaceContract.EventListener listener) {
+        this.listener = listener;
     }
 
     @Override
     public void updateBoard(SudokuGame game) {
-        for ( int xindex = 0; xindex < 9; xIndex++ ) {
+        for (int xIndex = 0; xIndex < 9; xIndex++ ) {
             for ( int yIndex = 0; yIndex < 9; yIndex++) {
-                TextField tile = textFieldCoordinates.get(new Coordinates(xindex,yIndex));
+                TextField tile = textFieldCoordinates.get(new Coordinates(xIndex,yIndex));
                 String value = Integer.toString(
-                        game.getCopyOfGridState()[xindex][yIndex]
+                        game.getCopyOfGridState()[xIndex][yIndex]
                 );
                 if (value.equals("0")) value = "";
                 tile.setText(value);
                 if (game.getGameState() == GameState.NEW) {
-                    if ( value.equals("")) {
+                    if (value.isEmpty()) {
                         tile.setStyle("-fx-opacity: 1;");
-                        tile.setDisabled(false);
+                        tile.setDisable(false);
                     } else {
                         tile.setStyle("-fx-opacity: 0.8;");
                         tile.setDisable(true);
@@ -205,7 +210,8 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
 
     @Override
     public void showError(String message) {
-
+        Alert dialog = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        dialog.showAndWait();
     }
 
     @Override
@@ -215,7 +221,7 @@ public class UserInterfaceImpl implements IUserInterfaceContract.View, EventHand
                 int value = Integer.parseInt(event.getText());
                 handleInput(value, event.getSource());
             } else if ( event.getCode() == KeyCode.BACK_SPACE) {
-                handelInput(0,event.getSource());
+                handleInput(0,event.getSource());
             } else {
                 ((TextField)event.getSource()).setText("");
             }

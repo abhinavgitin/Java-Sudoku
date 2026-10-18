@@ -1,5 +1,6 @@
 package sudoku.problemdomain;
 
+import java.util.Objects;
 public class Coordinates {
 
     private final int x;
@@ -28,6 +29,6 @@ public class Coordinates {
 
     @Override
     public int hashCode(){
-        return Object.hash(x,y);
+        return Objects.hash(x,y);
     }
 }
