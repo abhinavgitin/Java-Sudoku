@@ -1,11 +1,6 @@
 name: Deploy Web App to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "javasudokuweb/**"
-      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:
