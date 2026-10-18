@@ -1,0 +1,222 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: rgb(0, 150, 136);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    user-select: none;
+    overflow: hidden;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 668px;
+    padding: 16px;
+}
+
+#board-wrapper {
+    width: 100%;
+    max-width: 576px;
+    aspect-ratio: 1 / 1;
+    background-color: rgb(223, 242, 241);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#sudoku-board {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    background-color: #000;
+    gap: 0;
+    border: 3px solid #000;
+}
+
+.sudoku-cell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(223, 242, 241);
+    border-right: 2px solid #000;
+    border-bottom: 2px solid #000;
+    outline: none;
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: 500;
+    color: #000;
+    text-align: center;
+    caret-color: transparent;
+}
+
+.sudoku-cell:nth-child(9n) {
+    border-right: none;
+}
+
+.sudoku-cell:nth-child(n+73) {
+    border-bottom: none;
+}
+
+.sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
+    border-right: 3px solid #000;
+}
+
+.sudoku-cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 3px solid #000;
+}
+
+.sudoku-cell.clue {
+    opacity: 0.8;
+    cursor: default;
+}
+
+.sudoku-cell.editable {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.sudoku-cell.editable:focus {
+    background-color: rgb(200, 230, 228);
+}
+
+#game-title {
+    color: #ffffff;
+    font-size: clamp(30px, 6vw, 43px);
+    font-weight: 600;
+    margin-top: 18px;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+#dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+#dialog-overlay.hidden {
+    display: none;
+}
+
+#dialog-box {
+    background: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    min-width: 280px;
+    max-width: 420px;
+    width: 85%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: dialogPop 0.18s ease-out;
+}
+
+@keyframes dialogPop {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+#dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#dialog-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.dialog-info #dialog-icon {
+    background-color: #0288d1;
+}
+
+.dialog-info #dialog-icon::before {
+    content: "i";
+}
+
+.dialog-error #dialog-icon {
+    background-color: #d32f2f;
+}
+
+.dialog-error #dialog-icon::before {
+    content: "✕";
+}
+
+#dialog-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+}
+
+#dialog-message {
+    font-size: 15px;
+    color: #444444;
+    line-height: 1.4;
+}
+
+#dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+#dialog-ok-btn {
+    background-color: #f0f0f0;
+    color: #333333;
+    border: 1px solid #cccccc;
+    padding: 6px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+}
+
+#dialog-ok-btn:hover {
+    background-color: #e5e5e5;
+}
+
+#dialog-ok-btn:active {
+    background-color: #d8d8d8;
+}

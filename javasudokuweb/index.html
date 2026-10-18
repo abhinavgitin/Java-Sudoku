@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sudoku</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <div id="board-wrapper">
+            <div id="sudoku-board"></div>
+        </div>
+        <div id="game-title">Sudoku</div>
+    </div>
+
+    <div id="dialog-overlay" class="hidden">
+        <div id="dialog-box">
+            <div id="dialog-header">
+                <span id="dialog-icon"></span>
+                <span id="dialog-title"></span>
+            </div>
+            <div id="dialog-message"></div>
+            <div id="dialog-actions">
+                <button id="dialog-ok-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
